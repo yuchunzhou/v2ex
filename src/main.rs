@@ -1,15 +1,17 @@
 use isahc::prelude::*;
 use serde_json::Value;
+use std::io::Result;
 use std::io::{Error, ErrorKind};
 use std::process::exit;
 
-fn request_topics(url: &str) -> std::io::Result<Value> {
+fn request_topics(url: &str) -> Result<Value> {
     let mut resp = isahc::get(url).unwrap();
+
     let status = resp.status();
     if status != 200 {
         return Err(Error::new(
-                ErrorKind::Other,
-                format!("request content error: {:?}", status),
+            ErrorKind::Other,
+            format!("Request content error: {:?}", status),
         ));
     }
 
@@ -19,15 +21,15 @@ fn request_topics(url: &str) -> std::io::Result<Value> {
             let remaining = remaining.to_str().unwrap().parse::<u8>().unwrap();
             if remaining == 0 {
                 return Err(Error::new(
-                        ErrorKind::Other,
-                        "api limit remaining is exhausted",
+                    ErrorKind::Other,
+                    "Api limit remaining is exhausted",
                 ));
             }
         }
         None => {
             return Err(Error::new(
-                    ErrorKind::Other,
-                    "parse header X-Rate-Limit-Remaining error",
+                ErrorKind::Other,
+                "Parse header X-Rate-Limit-Remaining error",
             ));
         }
     }
@@ -46,6 +48,7 @@ fn main() {
             exit(1);
         }
     };
+
     println!(">>> 最热主题");
     for i in 0.. {
         match hot_topics.get(i) {
